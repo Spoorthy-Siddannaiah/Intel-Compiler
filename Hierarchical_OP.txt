@@ -1,0 +1,102 @@
+spoorthy@schatulle:~$ export ICSC_HOME=/home/spoorthy/work/systemc-compiler/
+spoorthy@schatulle:~$ cd $ICSC_HOME
+spoorthy@schatulle:~/work/systemc-compiler$ source setenv.sh
+spoorthy@schatulle:~/work/systemc-compiler$ cd build
+spoorthy@schatulle:~/work/systemc-compiler/build$ cmake ../
+CMake Warning (dev) in CMakeLists.txt:
+  No project() command is present.  The top-level CMakeLists.txt file must
+  contain a literal, direct call to the project() command.  Add a line of
+  code such as
+
+    project(ProjectName)
+
+  near the top of the file, but after cmake_minimum_required().
+
+  CMake is pretending there is a "project(Project)" command on the first
+  line.
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/spoorthy/work/systemc-compiler/build
+spoorthy@schatulle:~/work/systemc-compiler/build$ ctest -R hierarchical -VV   
+UpdateCTestConfiguration  from :/home/spoorthy/work/systemc-compiler/build/DartConfiguration.tcl
+UpdateCTestConfiguration  from :/home/spoorthy/work/systemc-compiler/build/DartConfiguration.tcl
+Test project /home/spoorthy/work/systemc-compiler/build
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 1268
+    Start 1268: hierarchical_BUILD
+
+1268: Test command: /usr/bin/cmake "--build" "/home/spoorthy/work/systemc-compiler/build" "--target" "hierarchical_sctool"
+1268: Test timeout computed to be: 10000000
+1268: Scanning dependencies of target hierarchical_sctool
+1268: Building CXX object icsc/designs/hierarchical/CMakeFiles/hierarchical_sctool.dir/hierarchical.sctool.cpp.o
+1268: Linking CXX executable hierarchical_sctool
+1268: Built target hierarchical_sctool
+1/2 Test #1268: hierarchical_BUILD ...............   Passed    1.46 sec
+test 1269
+    Start 1269: hierarchical_SYN
+
+1269: Test command: /home/spoorthy/work/systemc-compiler/build/icsc/designs/hierarchical/hierarchical_sctool
+1269: Test timeout computed to be: 10000000
+1269: 
+1269:         SystemC 2.3.3-Accellera --- Feb  3 2022 12:28:23
+1269:         Copyright (c) 1996-2018 by all Contributors,
+1269:         ALL RIGHTS RESERVED
+1269: 
+1269: Warning: (W505) object already exists: top.mif. Latter declaration will be renamed to top.mif_0
+1269: In file: /home/spoorthy/work/systemc-compiler/icsc/systemc/src/sysc/kernel/sc_object_manager.cpp:153
+1269: Design unity file: /home/spoorthy/work/systemc-compiler/build/icsc/designs/hierarchical/hierarchical.sctool.cpp
+1269: 
+1269: Finalize elaboration
+1269: --------------------------------------------------------------
+1269:  Intel Compiler for SystemC (ICSC) version 1.4.11, 31 Dec,2021
+1269: --------------------------------------------------------------
+1269: --------------------------------------
+1269: Module number 2
+1269: Process number 2
+1269: --------------------------------------
+1269: In file included from /home/spoorthy/work/systemc-compiler/build/icsc/designs/hierarchical/hierarchical.sctool.cpp:5:
+1269: /home/spoorthy/work/systemc-compiler/icsc/designs/hierarchical/example.cpp:35:24: warning: Register variable cannot be read in reset section
+1269:         sc_uint<4> c = b >> 4;
+1269:                        ^
+1269: /home/spoorthy/work/systemc-compiler/icsc/designs/hierarchical/example.cpp:35:24: warning: Signed shift operation may lead to non-equivalent code
+1269: /home/spoorthy/work/systemc-compiler/icsc/designs/hierarchical/example.cpp:41:17: warning: Signed/unsigned types mix may lead to non-equivalent code
+1269:             s = s.read()+b;
+1269:                 ^
+1269: /home/spoorthy/work/systemc-compiler/icsc/designs/hierarchical/example.cpp:31:5: warning: Multiple processes drive signal/port : minst_s
+1269:     void threadProc() 
+1269:     ^
+1269: ----------------------------------------------------------------
+1269:  SystemC-to-Verilog trasnlation, OK 
+1269: ----------------------------------------------------------------
+1269: 4 warnings generated.
+1269: Top-level module is Top
+2/2 Test #1269: hierarchical_SYN .................   Passed    2.08 sec
+
+The following tests passed:
+        hierarchical_BUILD
+        hierarchical_SYN
+
+100% tests passed, 0 tests failed out of 2
+
+Total Test time (real) =   3.57 sec
+spoorthy@schatulle:~/work/systemc-compiler/build$ make hierarchical
+[100%] Built target hierarchical
+spoorthy@schatulle:~/work/systemc-compiler/build$ ./hierarchical
+bash: ./hierarchical: No such file or directory
+spoorthy@schatulle:~/work/systemc-compiler/build$ cd icsc/designs/hierarchical
+spoorthy@schatulle:~/work/systemc-compiler/build/icsc/designs/hierarchical$ ./hierarchical
+
+        SystemC 2.3.3-Accellera --- Feb  3 2022 12:28:23
+        Copyright (c) 1996-2018 by all Contributors,
+        ALL RIGHTS RESERVED
+
+Warning: (W505) object already exists: top.mif. Latter declaration will be renamed to top.mif_0
+In file: /home/spoorthy/work/systemc-compiler/icsc/systemc/src/sysc/kernel/sc_object_manager.cpp:153
+
