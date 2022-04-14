@@ -1,73 +1,101 @@
-/******************************************************************************
-* Copyright (c) 2020, Intel Corporation. All rights reserved.
-* 
-* SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception.
-* 
-*****************************************************************************/
-
-//
-// Created by mmoiseev on 06/14/19.
-//
-
-#include "sct_comb_signal.h"
 #include <systemc.h>
+#include "AdvFifo.h"
+#include "sct_assert.h"
 
-// Local variable modified in reset of thread in MIF array
-struct mif : public sc_module, public sc_interface
+template<unsigned N>
+struct Dut : public sc_module 
 {
-    sc_in_clk           clk;
-    sc_in<bool>         nrst;
-
-    sc_signal<sc_uint<4>>     s;
+    typedef sc_uint<N> T;
     
-    SC_HAS_PROCESS(mif);
+    sc_in_clk       clk{"clk"};
+    sc_in<bool>     nrst{"nrst"};
     
-    explicit mif(const sc_module_name& name) : sc_module(name)
-    {
-        SC_CTHREAD(threadProc, clk.pos());
-        async_reset_signal_is(nrst, 0);
-    }
+    sc_in<T>        in{"in"};
+    sc_out<T>       out{"out"};
+    
+    adv_fifo_mif<T, 1, 1, 1, 6, 3, 1> fifo{"fifo"};
 
-    void threadProc() 
-    {
-        bool a = true;
-        int b = 42;
-        sc_uint<4> c = b >> 4;
+    SC_CTOR(Dut) {
+        fifo.clk_nrst(clk, nrst);
         
-        s = a ? (c + 1) : b; 
+        SC_CTHREAD(reqProc, clk.pos());
+        async_reset_signal_is(nrst, 0);
+
+        SC_CTHREAD(respProc, clk.pos());
+        async_reset_signal_is(nrst, 0);
+
+    }
+    
+    void reqProc() {
         wait();
         
-        while (true) {
-            s = s.read()+b;
+        while(true) {
+            if (fifo.ready()) {
+                fifo.push(in.read());
+            }
             wait();
+        }
+    }
+    
+    void respProc() {
+        wait();
+        
+        while(true) {
+            if (fifo.valid()) {
+                out = fifo.pop();
+            }
+            wait();
+
         }
     }
 };
 
-SC_MODULE(Top) 
-{
-    static const unsigned N = 2;
-    
-    sc_in_clk               clk{"clk"};
-    sc_signal<bool>         nrst;
-    
-    mif*           minst[N];
 
-    SC_CTOR(Top) 
-    {
+SC_MODULE(Tb) {
+    sc_in_clk clk{"clk"};
+    sc_signal<bool> nrst{"nrst"};
+
+    typedef sc_uint<32> T;
+    sc_signal<T>    in{"in"};
+    sc_signal<T>    out{"out"};
+    
+    Dut<32>  dut{"dut"};
+    
+    SC_CTOR(Tb) {
+        dut.clk(clk);
+        dut.nrst(nrst);
+        dut.in(in);
+        dut.out(out);
+        
+        SC_CTHREAD(tests, clk.pos());
+    }
+    
+    const unsigned N = 4000000;
+    
+    void tests() {
+        nrst = 0;
+        wait(10);
+        nrst = 1;
+        
         for (int i = 0; i < N; i++) {
-            minst[i] = new mif("mif");
-            minst[i]->clk(clk);
-            minst[i]->nrst(nrst);
+            in = i;
+            wait();
+            
+            if (out.read() > in.read()) {
+                cout << "in " << in.read() << " out " << out.read() << endl;
+                assert (false && "error");
+            }
         }
+        
+        sc_stop();
     }
 };
 
 int sc_main(int argc, char **argv) 
 {
-    sc_clock clk {"clk", sc_time(1, SC_NS)};
-    Top top{"top"};
-    top.clk(clk);
+    sc_clock clk("clk", sc_time(1, SC_NS));
+    Tb tb{"top"};
+    tb.clk(clk);
     
     sc_start();
 
